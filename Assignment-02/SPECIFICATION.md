@@ -1,13 +1,4 @@
-# CSE 472 – Assignment 2
-
-## Decision Trees, Random Forests, and Extra Trees (From Scratch)
-
-**Course:** CSE 472 – Machine Learning  
-**Department:** Computer Science and Engineering  
-**Assignment:** 2  
-**Last Compiled:** January 8, 2026
-
----
+# Decision Trees, Random Forests, and Extra Trees
 
 ## 📌 Overview
 

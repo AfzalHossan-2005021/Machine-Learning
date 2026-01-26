@@ -1,14 +1,19 @@
 from __future__ import annotations
 
-import numpy as np
+from typing import Any, Sequence
 
-from typing import Sequence
+import numpy as np
 from numpy.typing import NDArray
 
 from .tree import DecisionTreeClassifier, ExtraTreeClassifier
 
 
 class RandomForestClassifier:
+    """Random forest ensemble of decision trees (bootstrap aggregation).
+
+    Trains multiple DecisionTreeClassifier instances and averages their
+    predicted class probabilities.
+    """
     def __init__(
         self,
         *,
@@ -28,14 +33,35 @@ class RandomForestClassifier:
         self._rng = np.random.default_rng(random_state)
         self.trees: list[DecisionTreeClassifier] = []
 
-    def fit(self, X: Sequence[Sequence[float]], y: Sequence[int]) -> "RandomForestClassifier":
+    def get_params(self, deep: bool = True) -> dict[str, Any]:
+        """Get parameters for this estimator (sklearn compatibility)."""
+        return {
+            'n_estimators': self.n_estimators,
+            'max_depth': self.max_depth,
+            'min_samples_split': self.min_samples_split,
+            'max_features': self.max_features,
+            'bootstrap': self.bootstrap,
+            'random_state': self.random_state,
+        }
+
+    def set_params(self, **params: Any) -> "RandomForestClassifier":
+        """Set the parameters of this estimator (sklearn compatibility)."""
+        for key, value in params.items():
+            setattr(self, key, value)
+        return self
+
+    def fit(
+        self, X: Sequence[Sequence[float]], y: Sequence[int]
+    ) -> "RandomForestClassifier":
         X_arr = np.asarray(X, dtype=float)
         y_arr = np.asarray(y, dtype=int)
         n_samples = X_arr.shape[0]
         self.trees = []
         for _ in range(self.n_estimators):
             indices: NDArray[np.intp] = (
-                self._bootstrap_indices(n_samples) if self.bootstrap else np.arange(n_samples, dtype=np.intp)
+                self._bootstrap_indices(n_samples)
+                if self.bootstrap
+                else np.arange(n_samples, dtype=np.intp)
             )
             tree_random_state = self._rng.integers(0, np.iinfo(np.int32).max)
             tree = DecisionTreeClassifier(
@@ -62,6 +88,11 @@ class RandomForestClassifier:
 
 
 class ExtraTreesClassifier:
+    """Extremely randomized trees ensemble.
+
+    Builds multiple ExtraTreeClassifier instances with randomized thresholds
+    and averages their predicted probabilities.
+    """
     def __init__(
         self,
         *,
@@ -83,14 +114,36 @@ class ExtraTreesClassifier:
         self._rng = np.random.default_rng(random_state)
         self.trees: list[ExtraTreeClassifier] = []
 
-    def fit(self, X: Sequence[Sequence[float]], y: Sequence[int]) -> "ExtraTreesClassifier":
+    def get_params(self, deep: bool = True) -> dict[str, Any]:
+        """Get parameters for this estimator (sklearn compatibility)."""
+        return {
+            'n_estimators': self.n_estimators,
+            'max_depth': self.max_depth,
+            'min_samples_split': self.min_samples_split,
+            'max_features': self.max_features,
+            'n_thresholds': self.n_thresholds,
+            'bootstrap': self.bootstrap,
+            'random_state': self.random_state,
+        }
+
+    def set_params(self, **params: Any) -> "ExtraTreesClassifier":
+        """Set the parameters of this estimator (sklearn compatibility)."""
+        for key, value in params.items():
+            setattr(self, key, value)
+        return self
+
+    def fit(
+        self, X: Sequence[Sequence[float]], y: Sequence[int]
+    ) -> "ExtraTreesClassifier":
         X_arr = np.asarray(X, dtype=float)
         y_arr = np.asarray(y, dtype=int)
         n_samples = X_arr.shape[0]
         self.trees = []
         for _ in range(self.n_estimators):
             indices: NDArray[np.intp] = (
-                self._bootstrap_indices(n_samples) if self.bootstrap else np.arange(n_samples, dtype=np.intp)
+                self._bootstrap_indices(n_samples)
+                if self.bootstrap
+                else np.arange(n_samples, dtype=np.intp)
             )
             tree_random_state = self._rng.integers(0, np.iinfo(np.int32).max)
             tree = ExtraTreeClassifier(
